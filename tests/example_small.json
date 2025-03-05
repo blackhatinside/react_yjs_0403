@@ -1,0 +1,668 @@
+{
+    "id": "e481f6a8-5bf7-469e-ac6d-7b77e1e8314e",
+    "tenant_id": "flipkartdemo",
+    "question_id": 33,
+    "template_id": 3,
+    "config": [
+        {
+            "edges": [
+                {
+                    "sourceHandle": "G915lV2NZY_left",
+                    "type": "delete-edge",
+                    "style": {
+                        "strokeDasharray": 5.0
+                    },
+                    "id": "reactflow__edge-3xCrCbmOfLG915lV2NZY_left-WK-7qXL7WTWK-7qXL7WT",
+                    "source": "3xCrCbmOfL",
+                    "targetHandle": "WK-7qXL7WT",
+                    "target": "WK-7qXL7WT"
+                },
+                {
+                    "sourceHandle": "cPx70CuVzU_left",
+                    "type": "delete-edge",
+                    "style": {
+                        "strokeDasharray": 5.0
+                    },
+                    "id": "reactflow__edge-Kern4J0qkccPx70CuVzU_left-xdyoxLMgJWxdyoxLMgJW",
+                    "source": "Kern4J0qkc",
+                    "targetHandle": "xdyoxLMgJW",
+                    "target": "xdyoxLMgJW"
+                }
+            ],
+            "nodes": [
+                {
+                    "dragging": false,
+                    "targetPosition": "top",
+                    "type": "conditional-node",
+                    "height": 184.0,
+                    "id": "QgY-AHn0Uf",
+                    "data": {
+                        "type": "condition",
+                        "metadata": {
+                            "name": "OFD Message Said Correctly",
+                            "blocks": [
+                                {
+                                    "isNew": true,
+                                    "id": "m82S6vodx8",
+                                    "sourcePosition": "right",
+                                    "data": {
+                                        "type": "moment",
+                                        "is_not": false,
+                                        "metadata": {
+                                            "id": "d3579277-7288-4df6-8c66-27cd97d8c52f",
+                                            "name": ""
+                                        }
+                                    }
+                                },
+                                {
+                                    "isNew": true,
+                                    "id": "8pz13Q5lnk",
+                                    "sourcePosition": "left",
+                                    "data": {
+                                        "type": "moment",
+                                        "is_not": true,
+                                        "metadata": {
+                                            "id": "305b5978-1666-4955-b572-232c31c06f44",
+                                            "name": ""
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "selected": false,
+                    "position": {
+                        "y": 312.1805458640822,
+                        "x": 1000.5910406163348
+                    },
+                    "connectable": true,
+                    "draggable": true,
+                    "width": 250.0,
+                    "positionAbsolute": {
+                        "y": 312.1805458640822,
+                        "x": 1000.5910406163348
+                    }
+                },
+                {
+                    "height": 130.0,
+                    "targetPosition": "top",
+                    "type": "response-node",
+                    "dragging": false,
+                    "id": "xdyoxLMgJW",
+                    "connectable": true,
+                    "selected": false,
+                    "draggable": true,
+                    "position": {
+                        "y": 770.4816465650845,
+                        "x": -1193.6602072418032
+                    },
+                    "width": 250.0,
+                    "data": {
+                        "type": "response",
+                        "metadata": {
+                            "name": "Did the Agent follow the appropriate process?",
+                            "blocks": [
+                                {
+                                    "parent": null,
+                                    "id": "0",
+                                    "response": "0",
+                                    "sourcePosition": null,
+                                    "data": {
+                                        "type": null,
+                                        "is_not": false,
+                                        "metadata": {}
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "positionAbsolute": {
+                        "y": 770.4816465650845,
+                        "x": -1193.6602072418032
+                    }
+                }
+            ],
+            "id": "multiple"
+        }
+    ],
+    "internal_config": [
+        {
+            "ruleChain": {
+                "debugMode": false,
+                "root": true,
+                "id": "multiple",
+                "tenantId": "flipkartdemo",
+                "additionalInfo": {
+                    "description": "Converted from Graph"
+                },
+                "name": "test"
+            },
+            "metadata": {
+                "nodes": [
+                    {
+                        "type": "conditionalBlock",
+                        "debugMode": false,
+                        "configuration": {
+                            "validateWithFields": {},
+                            "blocks": [
+                                {
+                                    "id": "5zsco0OhQV",
+                                    "data": {
+                                        "position": {},
+                                        "type": "group_block",
+                                        "metadata": {
+                                            "validateWithFields": {},
+                                            "edges": [
+                                                {
+                                                    "sourceHandle": "wcj0qt5ekM_right",
+                                                    "type": "logic-edge",
+                                                    "style": {
+                                                        "strokeDasharray": 5.0
+                                                    },
+                                                    "id": "reactflow__edge-wcj0qt5ekMwcj0qt5ekM_right-cZwvGkeEijcZwvGkeEij",
+                                                    "source": "wcj0qt5ekM",
+                                                    "targetHandle": "cZwvGkeEij",
+                                                    "data": {
+                                                        "metadata": {
+                                                            "validateWithFields": {},
+                                                            "validateFields": {}
+                                                        },
+                                                        "operator": "and"
+                                                    },
+                                                    "target": "cZwvGkeEij"
+                                                }
+                                            ],
+                                            "nodes": [
+                                                {
+                                                    "height": 54.0,
+                                                    "type": "single-block-node",
+                                                    "metadata": {
+                                                        "validateWithFields": {},
+                                                        "validateFields": {}
+                                                    },
+                                                    "id": "wcj0qt5ekM",
+                                                    "sourcePosition": "right",
+                                                    "width": 218.0,
+                                                    "data": {
+                                                        "type": "validateInfo",
+                                                        "metadata": {
+                                                            "validateWithFields": {
+                                                                "attributeCategoryKey": 64.0
+                                                            },
+                                                            "operator": "gt",
+                                                            "validate": "attribute_category",
+                                                            "dataType": "date",
+                                                            "validateWith": "attribute_category",
+                                                            "validateFields": {
+                                                                "attributeCategoryKey": 60.0
+                                                            },
+                                                            "name": "Call Date after Repromise Date"
+                                                        }
+                                                    },
+                                                    "position": {},
+                                                    "positionAbsolute": {}
+                                                },
+                                                {
+                                                    "height": 54.0,
+                                                    "targetPosition": "left",
+                                                    "type": "single-block-node",
+                                                    "metadata": {
+                                                        "validateWithFields": {},
+                                                        "validateFields": {}
+                                                    },
+                                                    "id": "cZwvGkeEij",
+                                                    "width": 218.0,
+                                                    "connectable": true,
+                                                    "position": {
+                                                        "x": 400.0
+                                                    },
+                                                    "data": {
+                                                        "type": "validateInfo",
+                                                        "metadata": {
+                                                            "validateWithFields": {
+                                                                "attributeCategoryKey": 65.0
+                                                            },
+                                                            "validate": "attribute_category",
+                                                            "operator": "lt",
+                                                            "validateWith": "attribute_category",
+                                                            "dataType": "date",
+                                                            "validateFields": {
+                                                                "attributeCategoryKey": 60.0
+                                                            },
+                                                            "name": "Call Date Before OTAT"
+                                                        }
+                                                    },
+                                                    "positionAbsolute": {
+                                                        "x": 400.0
+                                                    }
+                                                }
+                                            ],
+                                            "validateFields": {},
+                                            "name": "(Scenario-1) Call Date after Repromise Date and Before OTAT"
+                                        },
+                                        "positionAbsolute": {},
+                                        "data": {
+                                            "metadata": {
+                                                "validateWithFields": {},
+                                                "validateFields": {}
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": "tW1IINPpgS",
+                                    "data": {
+                                        "position": {},
+                                        "type": "group_block",
+                                        "metadata": {
+                                            "validateWithFields": {},
+                                            "nodes": [
+                                                {
+                                                    "height": 54.0,
+                                                    "type": "single-block-node",
+                                                    "metadata": {
+                                                        "validateWithFields": {},
+                                                        "validateFields": {}
+                                                    },
+                                                    "id": "49DC5gtF2C",
+                                                    "width": 218.0,
+                                                    "selected": true,
+                                                    "position": {},
+                                                    "data": {
+                                                        "type": "validateInfo",
+                                                        "metadata": {
+                                                            "validateWithFields": {
+                                                                "attributeCategoryKey": 60.0
+                                                            },
+                                                            "validate": "attribute_category",
+                                                            "operator": "equals",
+                                                            "validateWith": "attribute_category",
+                                                            "dataType": "date",
+                                                            "validateFields": {
+                                                                "attributeCategoryKey": 65.0
+                                                            },
+                                                            "name": "Call Date on OTAT"
+                                                        }
+                                                    },
+                                                    "positionAbsolute": {}
+                                                }
+                                            ],
+                                            "validateFields": {},
+                                            "name": "(Scenario-2) Call Date on OTAT"
+                                        },
+                                        "positionAbsolute": {},
+                                        "data": {
+                                            "metadata": {
+                                                "validateWithFields": {},
+                                                "validateFields": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "is_not": false,
+                            "validateFields": {},
+                            "NodeIdList": [
+                                "5zsco0OhQV",
+                                "tW1IINPpgS"
+                            ],
+                            "name": "Did the Agent follow the appropriate process?"
+                        },
+                        "id": "8aQStbjsXb",
+                        "additionalInfo": {
+                            "description": "",
+                            "layoutY": 0.0,
+                            "layoutX": 0.0
+                        },
+                        "name": "Did the Agent follow the appropriate process?"
+                    },
+                    {
+                        "debugMode": false,
+                        "type": "validateInfo",
+                        "configuration": {
+                            "validateWithFields": {
+                                "attributeCategoryKey": 64.0
+                            },
+                            "operator": "gt",
+                            "validate": "attribute_category",
+                            "dataType": "date",
+                            "validateWith": "attribute_category",
+                            "is_not": false,
+                            "validateFields": {
+                                "attributeCategoryKey": 60.0
+                            },
+                            "name": "Call Date after Repromise Date"
+                        },
+                        "id": "wcj0qt5ekM",
+                        "additionalInfo": {
+                            "description": "",
+                            "layoutX": 0.0,
+                            "layoutY": 0.0
+                        },
+                        "name": "Call Date after Repromise Date"
+                    },
+                    {
+                        "debugMode": false,
+                        "type": "singleBlock",
+                        "configuration": {
+                            "validateWithFields": {},
+                            "NodeIdList": [
+                                "wcj0qt5ekM",
+                                "cZwvGkeEij"
+                            ],
+                            "edges": [
+                                {
+                                    "SourceNode": "wcj0qt5ekM",
+                                    "TargetNode": "cZwvGkeEij",
+                                    "Operator": "and"
+                                }
+                            ],
+                            "is_not": false,
+                            "nodes": [
+                                {
+                                    "height": 54.0,
+                                    "type": "single-block-node",
+                                    "metadata": {
+                                        "validateWithFields": {},
+                                        "validateFields": {}
+                                    },
+                                    "id": "wcj0qt5ekM",
+                                    "sourcePosition": "right",
+                                    "data": {
+                                        "type": "validateInfo",
+                                        "metadata": {
+                                            "validateWithFields": {
+                                                "attributeCategoryKey": 64.0
+                                            },
+                                            "validate": "attribute_category",
+                                            "operator": "gt",
+                                            "dataType": "date",
+                                            "validateWith": "attribute_category",
+                                            "validateFields": {
+                                                "attributeCategoryKey": 60.0
+                                            },
+                                            "name": "Call Date after Repromise Date"
+                                        }
+                                    },
+                                    "width": 218.0,
+                                    "position": {},
+                                    "positionAbsolute": {}
+                                },
+                                {
+                                    "height": 54.0,
+                                    "targetPosition": "left",
+                                    "type": "single-block-node",
+                                    "metadata": {
+                                        "validateWithFields": {},
+                                        "validateFields": {}
+                                    },
+                                    "id": "cZwvGkeEij",
+                                    "data": {
+                                        "type": "validateInfo",
+                                        "metadata": {
+                                            "validateWithFields": {
+                                                "attributeCategoryKey": 65.0
+                                            },
+                                            "validate": "attribute_category",
+                                            "operator": "lt",
+                                            "dataType": "date",
+                                            "validateWith": "attribute_category",
+                                            "validateFields": {
+                                                "attributeCategoryKey": 60.0
+                                            },
+                                            "name": "Call Date Before OTAT"
+                                        }
+                                    },
+                                    "width": 218.0,
+                                    "position": {
+                                        "x": 400.0
+                                    },
+                                    "connectable": true,
+                                    "positionAbsolute": {
+                                        "x": 400.0
+                                    }
+                                }
+                            ],
+                            "validateFields": {},
+                            "name": "(Scenario-1) Call Date after Repromise Date and Before OTAT"
+                        },
+                        "id": "5zsco0OhQV",
+                        "additionalInfo": {
+                            "description": "",
+                            "layoutX": 0.0,
+                            "layoutY": 0.0
+                        },
+                        "name": "(Scenario-1) Call Date after Repromise Date and Before OTAT"
+                    }
+                ],
+                "connections": [
+                    {
+                        "type": "True",
+                        "fromId": "5zsco0OhQV",
+                        "toId": "vw15KBZ1sF"
+                    },
+                    {
+                        "type": "True",
+                        "fromId": "uSywzhkQSQ",
+                        "toId": "QgY-AHn0Uf"
+                    }
+                ],
+                "firstNodeIndex": 0.0
+            }
+        }
+    ],
+    "draft_config": [
+        {
+            "edges": [
+                {
+                    "sourceHandle": "5zsco0OhQV_right",
+                    "type": "delete-edge",
+                    "style": {
+                        "strokeDasharray": 5.0
+                    },
+                    "id": "reactflow__edge-8aQStbjsXb5zsco0OhQV_right-vw15KBZ1sFvw15KBZ1sF",
+                    "source": "8aQStbjsXb",
+                    "targetHandle": "vw15KBZ1sF",
+                    "target": "vw15KBZ1sF"
+                },
+                {
+                    "sourceHandle": "uSywzhkQSQ_right",
+                    "type": "delete-edge",
+                    "style": {
+                        "strokeDasharray": 5.0
+                    },
+                    "id": "reactflow__edge-vw15KBZ1sFuSywzhkQSQ_right-QgY-AHn0UfQgY-AHn0Uf",
+                    "source": "vw15KBZ1sF",
+                    "targetHandle": "QgY-AHn0Uf",
+                    "target": "QgY-AHn0Uf"
+                }
+            ],
+            "nodes": [
+                {
+                    "dragging": false,
+                    "targetPosition": "top",
+                    "type": "conditional-node",
+                    "height": 184.0,
+                    "id": "vw15KBZ1sF",
+                    "width": 250.0,
+                    "selected": false,
+                    "draggable": true,
+                    "position": {
+                        "y": 127.13373341548996,
+                        "x": 631.6424732283824
+                    },
+                    "connectable": true,
+                    "data": {
+                        "type": "condition",
+                        "metadata": {
+                            "name": "OFD Status",
+                            "blocks": [
+                                {
+                                    "isNew": true,
+                                    "id": "uSywzhkQSQ",
+                                    "sourcePosition": "right",
+                                    "data": {
+                                        "type": "validateInfo",
+                                        "is_not": false,
+                                        "metadata": {
+                                            "validateWithFields": {
+                                                "attributeCategory": null,
+                                                "attributeCategoryKey": null,
+                                                "entity": null
+                                            },
+                                            "value": "yes",
+                                            "operator": "equals",
+                                            "validate": "attribute_category",
+                                            "list": [],
+                                            "min": null,
+                                            "validateWith": "static_info",
+                                            "dataType": "string",
+                                            "matchType": "exact",
+                                            "validateFields": {
+                                                "attributeCategory": 33.0,
+                                                "attributeCategoryKey": 69.0,
+                                                "entity": null
+                                            },
+                                            "max": null,
+                                            "name": "Yes"
+                                        }
+                                    }
+                                },
+                                {
+                                    "isNew": true,
+                                    "id": "63un8PKf--",
+                                    "sourcePosition": "left",
+                                    "data": {
+                                        "type": "validateInfo",
+                                        "is_not": true,
+                                        "metadata": {
+                                            "validateWithFields": {
+                                                "attributeCategory": null,
+                                                "entity": null,
+                                                "attributeCategoryKey": null
+                                            },
+                                            "value": "yes",
+                                            "validate": "attribute_category",
+                                            "operator": "equals",
+                                            "validateWith": "static_info",
+                                            "dataType": "string",
+                                            "list": [],
+                                            "min": null,
+                                            "matchType": "exact",
+                                            "validateFields": {
+                                                "attributeCategory": 33.0,
+                                                "attributeCategoryKey": 69.0,
+                                                "entity": null
+                                            },
+                                            "max": null,
+                                            "name": "No"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "positionAbsolute": {
+                        "y": 127.13373341548996,
+                        "x": 631.6424732283824
+                    }
+                },
+                {
+                    "dragging": false,
+                    "targetPosition": "top",
+                    "type": "conditional-node",
+                    "height": 184.0,
+                    "id": "QgY-AHn0Uf",
+                    "width": 250.0,
+                    "selected": false,
+                    "position": {
+                        "y": 312.1805458640822,
+                        "x": 1000.5910406163348
+                    },
+                    "data": {
+                        "type": "condition",
+                        "metadata": {
+                            "name": "OFD Message Said Correctly",
+                            "blocks": [
+                                {
+                                    "isNew": true,
+                                    "id": "m82S6vodx8",
+                                    "sourcePosition": "right",
+                                    "data": {
+                                        "type": "moment",
+                                        "is_not": false,
+                                        "metadata": {
+                                            "id": "d3579277-7288-4df6-8c66-27cd97d8c52f",
+                                            "name": ""
+                                        }
+                                    }
+                                },
+                                {
+                                    "isNew": true,
+                                    "id": "8pz13Q5lnk",
+                                    "sourcePosition": "left",
+                                    "data": {
+                                        "type": "moment",
+                                        "is_not": true,
+                                        "metadata": {
+                                            "id": "305b5978-1666-4955-b572-232c31c06f44",
+                                            "name": ""
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "draggable": true,
+                    "connectable": true,
+                    "positionAbsolute": {
+                        "y": 312.1805458640822,
+                        "x": 1000.5910406163348
+                    }
+                },
+                {
+                    "height": 130.0,
+                    "targetPosition": "top",
+                    "type": "response-node",
+                    "dragging": false,
+                    "id": "Uk057ZJ5w4",
+                    "width": 250.0,
+                    "selected": false,
+                    "position": {
+                        "y": 564.3470729957304,
+                        "x": 1241.2406915955933
+                    },
+                    "connectable": true,
+                    "data": {
+                        "type": "response",
+                        "metadata": {
+                            "blocks": [
+                                {
+                                    "parent": null,
+                                    "response": "1",
+                                    "id": "1",
+                                    "sourcePosition": null,
+                                    "data": {
+                                        "type": null,
+                                        "is_not": false,
+                                        "metadata": {}
+                                    }
+                                }
+                            ],
+                            "name": "Did the Agent follow the appropriate process?"
+                        }
+                    },
+                    "draggable": true,
+                    "positionAbsolute": {
+                        "y": 564.3470729957304,
+                        "x": 1241.2406915955933
+                    }
+                }
+            ],
+            "id": "multiple"
+        }
+    ],
+    "created_at": "1739861925",
+    "updated_at": "1740309839",
+    "published_at": "1740309839"
+}
