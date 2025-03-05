@@ -1,12 +1,24 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
+import * as awarenessProtocol from 'y-protocols/awareness';
 
 // Create a document that syncs automatically
 export const ydoc = new Y.Doc();
 
+// Connect to the websocket provider with better reconnection handling
+export const wsProvider = new WebsocketProvider(
+  'ws://localhost:1234', 
+  'rule-engine-room',
+  ydoc,
+  { 
+    connect: true,
+    maxBackoffTime: 2000
+  }
+);
+
 // For client presence awareness (cursors, etc.)
-export const awareness = new WebsocketProvider('ws://localhost:1234', 'rule-engine-room', ydoc).awareness;
+export const awareness = wsProvider.awareness;
 
 // Local persistence to survive page reloads
 export const indexeddbProvider = new IndexeddbPersistence('rule-engine-room', ydoc);
@@ -16,12 +28,8 @@ export const nodesMap = ydoc.getMap('nodes');
 export const edgesMap = ydoc.getMap('edges');
 export const metadataMap = ydoc.getMap('metadata');
 
-// Connect to the websocket provider
-export const wsProvider = new WebsocketProvider(
-  'ws://localhost:1234', 
-  'rule-engine-room',
-  ydoc
-);
+// Export awarenessProtocol for use in other files
+export { awarenessProtocol };
 
 // Initialize metadata with default values if it doesn't exist yet
 if (metadataMap.size === 0) {

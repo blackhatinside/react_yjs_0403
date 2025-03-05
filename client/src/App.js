@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ydoc, awareness, wsProvider } from './yjsSetup';
+import { ydoc, awareness, wsProvider, awarenessProtocol } from './yjsSetup';
+import { ReactFlowProvider } from 'reactflow';
 import FlowDiagram from './components/FlowDiagram';
 import './App.css';
 
@@ -13,73 +14,108 @@ const App = () => {
       setConnectionStatus(event.status);
     });
 
-    // Set up awareness for client tracking
+    // Set up awareness for client tracking with better deduplication
     awareness.on('change', () => {
       const states = Array.from(awareness.getStates().values());
-      setActiveUsers(states.filter(state => state.user).map(state => state.user));
+      
+      // Get unique users by clientID
+      const uniqueUsers = [];
+      const seenIds = new Set();
+      
+      states.forEach(state => {
+        if (state.user && !seenIds.has(state.user.clientID)) {
+          uniqueUsers.push(state.user);
+          seenIds.add(state.user.clientID);
+        }
+      });
+      
+      setActiveUsers(uniqueUsers);
     });
 
-    // Get saved user info or create new one
-    const getUserInfo = () => {
-      const savedUser = localStorage.getItem('collaborativeUserInfo');
-      
-      if (savedUser) {
-        return JSON.parse(savedUser);
-      } else {
-        // Create new user info
-        const userInfo = {
-          id: ydoc.clientID,
-          name: `User-${Math.floor(Math.random() * 1000)}`,
-          color: `#${Math.floor(Math.random() * 16777215).toString(16)}`
-        };
-        
-        // Save to localStorage for future sessions
-        localStorage.setItem('collaborativeUserInfo', JSON.stringify(userInfo));
-        return userInfo;
+    // Generate a persistent user ID for this browser
+    const getBrowserId = () => {
+      let browserId = localStorage.getItem('ruleBrowserId');
+      if (!browserId) {
+        browserId = `browser-${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
+        localStorage.setItem('ruleBrowserId', browserId);
       }
+      return browserId;
     };
 
-    // Set local user state with persistent identity
-    const userInfo = getUserInfo();
-    awareness.setLocalState({
-      user: userInfo
-    });
+    // Get user info with consistent ID per browser but unique name per tab
+    const getUserInfo = () => {
+      const browserId = getBrowserId();
+      const tabId = `tab-${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
+      
+      // Get or create a username that's consistent for this browser
+      let userName = localStorage.getItem('ruleUserName');
+      if (!userName) {
+        userName = `User-${Math.floor(Math.random() * 1000)}`;
+        localStorage.setItem('ruleUserName', userName);
+      }
+      
+      return {
+        clientID: ydoc.clientID,
+        browserId: browserId,
+        tabId: tabId,
+        name: userName,
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`
+      };
+    };
 
-    // Cleanup
+    // Set user state only once per document instance
+    const userInfo = getUserInfo();
+    awareness.setLocalState({ user: userInfo });
+
+    // Properly clean up on unmount and page refresh
+    const handleBeforeUnload = () => {
+      // Immediately remove this client's state
+      awarenessProtocol.removeAwarenessStates(
+        awareness,
+        [ydoc.clientID],
+        'window unload'
+      );
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
+      handleBeforeUnload();
       wsProvider.off('status');
       awareness.off('change');
-      awareness.setLocalState(null);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Collaborative Rule Engine Designer</h1>
-        <div className="connection-status">
-          Status: <span className={connectionStatus}>{connectionStatus}</span>
-        </div>
-        <div className="active-users">
-          {activeUsers.length > 0 ? (
-            <div>
-              <span>Active Users: </span>
-              {activeUsers.map((user, index) => (
-                <span key={index} style={{ color: user.color }}>
-                  {user.name}{index < activeUsers.length - 1 ? ', ' : ''}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <span>No other users online</span>
-          )}
-        </div>
-      </header>
-      
-      <main className="app-content">
-        <FlowDiagram />
-      </main>
-    </div>
+    <ReactFlowProvider>
+      <div className="app">
+        <header className="app-header">
+          <h1>Collaborative Rule Engine Designer</h1>
+          <div className="connection-status">
+            Status: <span className={connectionStatus}>{connectionStatus}</span>
+          </div>
+          <div className="active-users">
+            {activeUsers.length > 0 ? (
+              <div>
+                <span>Active Users: </span>
+                {activeUsers.map((user, index) => (
+                  <span key={user.clientID} style={{ color: user.color }}>
+                    {user.name}{index < activeUsers.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span>No other users online</span>
+            )}
+          </div>
+        </header>
+        
+        <main className="app-content">
+          <FlowDiagram />
+        </main>
+      </div>
+    </ReactFlowProvider>
   );
 };
 

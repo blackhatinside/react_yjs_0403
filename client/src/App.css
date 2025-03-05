@@ -139,3 +139,18 @@
 .rule-chain-preview pre {
   font-size: 0.875rem;
 }
+
+.remote-cursor {
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.cursor-label {
+  opacity: 0.9;
+  transform: translateY(16px);
+  transition: opacity 0.2s ease;
+}
+
+.remote-cursor:hover .cursor-label {
+  opacity: 1;
+}

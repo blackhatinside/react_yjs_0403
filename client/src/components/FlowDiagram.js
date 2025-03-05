@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -6,15 +6,35 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge as rfAddEdge,
-  Panel
+  Panel,
+  useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { nodesMap, edgesMap, getNodes, getEdges } from '../yjsSetup';
-import { addNode, removeNode, addEdge, removeEdge, updateMetadata, convertToRuleEngineDSL, detectCycle } from '../collabOperations';
+import { 
+  addNode, 
+  removeNode, 
+  addEdge, 
+  removeEdge, 
+  updateMetadata, 
+  convertToRuleEngineDSL, 
+  detectCycle,
+  updateNodePosition,
+  updateNodeMetadata,
+  updateEdgeData
+} from '../collabOperations';
 
+import NodeConfig from './NodeConfig';
+import EdgeConfig from './EdgeConfig';
+import { StartNode, ConditionNode, ActionNode } from './CustomNodes';
+
+// Define custom node types
 const nodeTypes = {
-  // Custom node types could be defined here
+  start: StartNode,
+  condition: ConditionNode,
+  action: ActionNode,
+  default: StartNode // Fallback
 };
 
 const FlowDiagram = () => {
@@ -22,6 +42,14 @@ const FlowDiagram = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isValidDiagram, setIsValidDiagram] = useState(true);
   const [ruleChainData, setRuleChainData] = useState(null);
+  
+  // State for node and edge configuration modals
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedEdge, setSelectedEdge] = useState(null);
+  
+  // React Flow reference
+  const reactFlowWrapper = useRef(null);
+  const reactFlowInstance = useReactFlow();
 
   // Initialize ReactFlow with Yjs data
   useEffect(() => {
@@ -65,7 +93,7 @@ const FlowDiagram = () => {
     } catch (error) {
       console.error('Error in FlowDiagram useEffect:', error);
     }
-  }, []);
+  }, [setNodes, setEdges]);
 
   // Update rule chain data whenever nodes or edges change
   useEffect(() => {
@@ -108,7 +136,8 @@ const FlowDiagram = () => {
         source: params.source,
         target: params.target,
         sourceHandle: params.sourceHandle,
-        targetHandle: params.targetHandle
+        targetHandle: params.targetHandle,
+        data: { operator: 'AND' } // Default operator
       };
       
       addEdge(newEdge);
@@ -144,6 +173,44 @@ const FlowDiagram = () => {
     }
   };
 
+  // Handle node position update on drag end
+  const onNodeDragStop = useCallback((event, node) => {
+    try {
+      // Update the position in Yjs
+      updateNodePosition(node.id, node.position);
+    } catch (error) {
+      console.error('Error updating node position:', error);
+    }
+  }, []);
+
+  // Handle node double-click to open configuration
+  const onNodeDoubleClick = useCallback((event, node) => {
+    setSelectedNode(node);
+  }, []);
+
+  // Handle edge double-click to open configuration
+  const onEdgeDoubleClick = useCallback((event, edge) => {
+    setSelectedEdge(edge);
+  }, []);
+
+  // Save node configuration
+  const onSaveNodeConfig = useCallback((nodeId, metadata) => {
+    try {
+      updateNodeMetadata(nodeId, metadata);
+    } catch (error) {
+      console.error('Error saving node configuration:', error);
+    }
+  }, []);
+
+  // Save edge configuration
+  const onSaveEdgeConfig = useCallback((edgeId, data) => {
+    try {
+      updateEdgeData(edgeId, data);
+    } catch (error) {
+      console.error('Error saving edge configuration:', error);
+    }
+  }, []);
+
   // Export diagram to DSL
   const onExportDiagram = () => {
     try {
@@ -170,7 +237,7 @@ const FlowDiagram = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '80vh' }}>
+    <div style={{ width: '100%', height: '80vh' }} ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -180,6 +247,9 @@ const FlowDiagram = () => {
         onEdgesDelete={onEdgesDelete}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        onNodeDragStop={onNodeDragStop}
+        onNodeDoubleClick={onNodeDoubleClick}
+        onEdgeDoubleClick={onEdgeDoubleClick}
         fitView
       >
         <Controls />
@@ -202,6 +272,24 @@ const FlowDiagram = () => {
           </div>
         </Panel>
       </ReactFlow>
+      
+      {/* Node Configuration Modal */}
+      {selectedNode && (
+        <NodeConfig 
+          node={selectedNode}
+          onClose={() => setSelectedNode(null)}
+          onSave={onSaveNodeConfig}
+        />
+      )}
+      
+      {/* Edge Configuration Modal */}
+      {selectedEdge && (
+        <EdgeConfig 
+          edge={selectedEdge}
+          onClose={() => setSelectedEdge(null)}
+          onSave={onSaveEdgeConfig}
+        />
+      )}
       
       {ruleChainData && (
         <div className="rule-chain-preview">
