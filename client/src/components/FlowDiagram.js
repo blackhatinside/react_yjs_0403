@@ -22,7 +22,8 @@ import {
   detectCycle,
   updateNodePosition,
   updateNodeMetadata,
-  updateEdgeData
+  updateEdgeData,
+  importFromJSON
 } from '../collabOperations';
 
 import NodeConfig from './NodeConfig';
@@ -61,6 +62,8 @@ const FlowDiagram = () => {
   // React Flow reference
   const reactFlowWrapper = useRef(null);
   const reactFlowInstance = useReactFlow();
+
+  const fileInputRef = useRef(null);
 
   // Initialize ReactFlow with Yjs data
   useEffect(() => {
@@ -228,6 +231,31 @@ const FlowDiagram = () => {
     }
   };
 
+  const handleImportFile = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonData = JSON.parse(e.target.result);
+          const success = importFromJSON(jsonData);
+          if (success) {
+            console.log('Diagram imported successfully');
+          } else {
+            console.error('Failed to import diagram');
+          }
+        } catch (error) {
+          console.error('Error parsing JSON file:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const openFileDialog = () => {
+    fileInputRef.current.click();
+  };
+
   return (
     <div style={{ width: '100%', height: '80vh' }} ref={reactFlowWrapper}>
       <ReactFlow
@@ -276,6 +304,14 @@ const FlowDiagram = () => {
             <button onClick={onExportDiagram} disabled={!isValidDiagram}>
               Export Diagram
             </button>
+            <button onClick={openFileDialog}>Import Diagram</button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept=".json"
+              onChange={handleImportFile}
+            />
             {!isValidDiagram && (
               <div className="error-message">
                 Cycle detected in diagram! Please remove the cycle before exporting.

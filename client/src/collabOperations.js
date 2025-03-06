@@ -329,7 +329,7 @@ export const convertToRuleEngineDSL = () => {
   }
 };
 
-// Add import function to load JSON diagrams
+// Import function to load JSON diagrams
 export const importFromJSON = (jsonData) => {
   try {
     // Clear existing data
@@ -341,27 +341,58 @@ export const importFromJSON = (jsonData) => {
     if (config.length > 0) {
       const diagram = config[0]; // Assuming first diagram
       
+      // Set metadata
+      if (diagram.id) {
+        metadataMap.set('id', diagram.id);
+      }
+      
       // Import nodes
       (diagram.nodes || []).forEach(node => {
-        addNode({
-          id: node.id,
-          type: node.type || 'default',
-          position: node.position || { x: 0, y: 0 },
-          data: node.data || {}
-        });
+        const nodeId = node.id;
+        const nodeType = node.type || 'default';
+        
+        // Extract position data
+        const position = node.position || node.positionAbsolute || { x: 0, y: 0 };
+        
+        // Create node structure
+        const newNode = {
+          id: nodeId,
+          type: nodeType,
+          position: position,
+          data: {
+            type: node.data?.type || nodeType,
+            metadata: {
+              ...node.data?.metadata,
+              name: node.data?.metadata?.name || `New ${nodeType} Node`
+            }
+          }
+        };
+        
+        // Add to Yjs
+        addNode(newNode);
       });
       
       // Import edges
       (diagram.edges || []).forEach(edge => {
-        addEdge({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
+        const edgeId = edge.id;
+        const source = edge.source;
+        const target = edge.target;
+        
+        // Create edge structure
+        const newEdge = {
+          id: edgeId,
+          source: source,
+          target: target,
           sourceHandle: edge.sourceHandle,
           targetHandle: edge.targetHandle,
-          data: edge.data || { operator: 'AND' },
+          data: {
+            operator: edge.data?.operator || 'AND'
+          },
           label: edge.data?.operator || 'AND'
-        });
+        };
+        
+        // Add to Yjs
+        addEdge(newEdge);
       });
     }
     
