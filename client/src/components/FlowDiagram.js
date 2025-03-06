@@ -27,14 +27,25 @@ import {
 
 import NodeConfig from './NodeConfig';
 import EdgeConfig from './EdgeConfig';
-import { StartNode, ConditionNode, ActionNode } from './CustomNodes';
+import { StartNode, ConditionNode, ActionNode, ConditionalNode, ResponseNode } from './CustomNodes';
 
 // Define custom node types
 const nodeTypes = {
   start: StartNode,
   condition: ConditionNode,
   action: ActionNode,
-  default: StartNode // Fallback
+  default: StartNode, // Fallback
+  'conditional-node': ConditionalNode,
+  'response-node': ResponseNode,
+};
+
+// Define edge options with labels instead of colors
+const defaultEdgeOptions = {
+  style: { stroke: '#555' },
+  labelStyle: { fill: '#000', fontWeight: 'bold' },
+  labelBgStyle: { fill: 'white', fillOpacity: 0.7 },
+  labelBgPadding: [2, 4],
+  labelShowBg: true
 };
 
 const FlowDiagram = () => {
@@ -114,7 +125,11 @@ const FlowDiagram = () => {
         sourceHandle: params.sourceHandle,
         targetHandle: params.targetHandle,
         data: { operator: 'AND' },
-        className: 'AND' // Add className for styling
+        label: 'AND', // Add label instead of className
+        labelStyle: defaultEdgeOptions.labelStyle,
+        labelBgStyle: defaultEdgeOptions.labelBgStyle,
+        labelBgPadding: defaultEdgeOptions.labelBgPadding,
+        labelShowBg: defaultEdgeOptions.labelShowBg
       };
       
       addEdge(newEdge);

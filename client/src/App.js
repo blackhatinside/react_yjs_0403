@@ -11,13 +11,30 @@ const App = () => {
   useEffect(() => {
     const handleStatus = (event) => {
       console.log('Connection status:', event.status);
-      setConnectionStatus(event.status);
+      
+      // Map the raw status to a more user-friendly display
+      const statusMap = {
+        connecting: 'connecting',
+        connected: 'connected',
+        disconnected: 'disconnected'
+      };
+      
+      // Update the status display
+      setConnectionStatus(statusMap[event.status]);
       
       // Force reconnect if disconnected
       if (event.status === 'disconnected' && wsProvider.shouldConnect) {
         wsProvider.connect();
       }
     };
+
+    // Add a ping interval to verify connection
+    const pingInterval = setInterval(() => {
+      if (wsProvider.wsconnected) {
+        // Connection is actually working, force status update
+        setConnectionStatus('connected');
+      }
+    }, 5000);
 
     wsProvider.on('status', handleStatus);
     
@@ -88,6 +105,7 @@ const App = () => {
 
     return () => {
       handleBeforeUnload();
+      clearInterval(pingInterval);
       wsProvider.off('status', handleStatus);
       awareness.off('change');
       window.removeEventListener('beforeunload', handleBeforeUnload);

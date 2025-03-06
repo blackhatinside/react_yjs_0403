@@ -121,7 +121,8 @@ export const getEdges = () => {
       const edge = {
         id: id,
         source: yEdge.get('source'),
-        target: yEdge.get('target')
+        target: yEdge.get('target'),
+        style: { stroke: '#555' }
       };
       
       if (yEdge.has('sourceHandle')) {
@@ -137,10 +138,18 @@ export const getEdges = () => {
         if (data) {
           edge.data = {};
           if (data.has('operator')) {
-            edge.data.operator = data.get('operator');
+            const operator = data.get('operator');
+            edge.data.operator = operator;
+            edge.label = operator;
+            edge.labelStyle = { fill: '#000', fontWeight: 'bold' };
+            edge.labelBgStyle = { fill: 'white', fillOpacity: 0.7 };
+            edge.labelBgPadding = [2, 4];
+            edge.labelShowBg = true;
           }
         }
       }
+      
+      edge.type = 'default';
       
       edges.push(edge);
     } catch (error) {
@@ -153,13 +162,12 @@ export const getEdges = () => {
 
 // Add better error handling
 wsProvider.on('status', event => {
-  console.log('WebSocket connection status:', event.status);
-  if (event.status === 'connected') {
-    // Force reconnection if needed
-    if (!wsProvider.connected) {
-      wsProvider.connect();
-    }
-  }
+  const statusMap = {
+    connecting: 'Connecting...',
+    connected: 'Connected',
+    disconnected: 'Disconnected'
+  };
+  console.log('Connection status:', statusMap[event.status] || 'Unknown');
 });
 
 wsProvider.on('sync', (isSynced) => {

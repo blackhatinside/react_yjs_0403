@@ -21,4 +21,22 @@ const BaseNode = ({ id, data, type, selected }) => {
 
 export const StartNode = memo((props) => <BaseNode {...props} />);
 export const ConditionNode = memo((props) => <BaseNode {...props} />);
-export const ActionNode = memo((props) => <BaseNode {...props} />); 
+export const ActionNode = memo((props) => <BaseNode {...props} />);
+
+export const ConditionalNode = ({ data }) => {
+  return (
+    <div className="conditional-node">
+      <h3>{data.metadata?.name || 'Condition'}</h3>
+      {/* Add conditional node specific UI */}
+    </div>
+  );
+};
+
+export const ResponseNode = ({ data }) => {
+  return (
+    <div className="response-node">
+      <h3>{data.metadata?.name || 'Response'}</h3>
+      {/* Add response node specific UI */}
+    </div>
+  );
+}; 
