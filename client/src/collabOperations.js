@@ -328,3 +328,46 @@ export const convertToRuleEngineDSL = () => {
     return { error: 'Failed to convert to rule engine DSL' };
   }
 };
+
+// Add import function to load JSON diagrams
+export const importFromJSON = (jsonData) => {
+  try {
+    // Clear existing data
+    nodesMap.clear();
+    edgesMap.clear();
+    
+    // Process the JSON data
+    const config = jsonData.config || [];
+    if (config.length > 0) {
+      const diagram = config[0]; // Assuming first diagram
+      
+      // Import nodes
+      (diagram.nodes || []).forEach(node => {
+        addNode({
+          id: node.id,
+          type: node.type || 'default',
+          position: node.position || { x: 0, y: 0 },
+          data: node.data || {}
+        });
+      });
+      
+      // Import edges
+      (diagram.edges || []).forEach(edge => {
+        addEdge({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle,
+          data: edge.data || { operator: 'AND' },
+          label: edge.data?.operator || 'AND'
+        });
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error importing JSON:', error);
+    return false;
+  }
+};
