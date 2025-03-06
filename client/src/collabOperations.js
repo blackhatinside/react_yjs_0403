@@ -80,6 +80,8 @@ export const addEdge = (edge) => {
       const data = new Y.Map();
       if (edge.data.operator) {
         data.set('operator', edge.data.operator);
+        // Add className based on operator
+        edgeData.set('className', edge.data.operator);
       }
       edgeData.set('data', data);
     } else {
@@ -87,6 +89,7 @@ export const addEdge = (edge) => {
       const data = new Y.Map();
       data.set('operator', 'AND');
       edgeData.set('data', data);
+      edgeData.set('className', 'AND');
     }
     
     // Add to the Yjs map

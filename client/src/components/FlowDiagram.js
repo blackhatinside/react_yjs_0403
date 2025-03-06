@@ -11,7 +11,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { nodesMap, edgesMap, getNodes, getEdges } from '../yjsSetup';
+import { nodesMap, edgesMap, getNodes, getEdges, wsProvider } from '../yjsSetup';
 import { 
   addNode, 
   removeNode, 
@@ -53,47 +53,23 @@ const FlowDiagram = () => {
 
   // Initialize ReactFlow with Yjs data
   useEffect(() => {
-    try {
-      // Load initial data
+    const forceUpdate = () => {
       setNodes(getNodes());
       setEdges(getEdges());
+    };
 
-      // Observe changes to the Yjs maps
-      const nodesObserver = () => {
-        try {
-          const flowNodes = getNodes();
-          setNodes(flowNodes);
-        } catch (error) {
-          console.error('Error in nodesObserver:', error);
-        }
-      };
-      
-      const edgesObserver = () => {
-        try {
-          const flowEdges = getEdges();
-          setEdges(flowEdges);
-          
-          // Check for cycles whenever edges change
-          const hasCycle = detectCycle(flowEdges);
-          setIsValidDiagram(!hasCycle);
-        } catch (error) {
-          console.error('Error in edgesObserver:', error);
-        }
-      };
+    // Force initial update
+    forceUpdate();
 
-      // Register observers
-      nodesMap.observe(nodesObserver);
-      edgesMap.observe(edgesObserver);
+    // Add a periodic sync check
+    const syncInterval = setInterval(() => {
+      if (wsProvider.shouldConnect) {
+        forceUpdate();
+      }
+    }, 1000);
 
-      // Clean up observers on component unmount
-      return () => {
-        nodesMap.unobserve(nodesObserver);
-        edgesMap.unobserve(edgesObserver);
-      };
-    } catch (error) {
-      console.error('Error in FlowDiagram useEffect:', error);
-    }
-  }, [setNodes, setEdges]);
+    return () => clearInterval(syncInterval);
+  }, []);
 
   // Update rule chain data whenever nodes or edges change
   useEffect(() => {
@@ -137,7 +113,8 @@ const FlowDiagram = () => {
         target: params.target,
         sourceHandle: params.sourceHandle,
         targetHandle: params.targetHandle,
-        data: { operator: 'AND' } // Default operator
+        data: { operator: 'AND' },
+        className: 'AND' // Add className for styling
       };
       
       addEdge(newEdge);
@@ -250,6 +227,26 @@ const FlowDiagram = () => {
         onNodeDragStop={onNodeDragStop}
         onNodeDoubleClick={onNodeDoubleClick}
         onEdgeDoubleClick={onEdgeDoubleClick}
+        onEdgeUpdate={(oldEdge, newConnection) => {
+          try {
+            // Remove old edge
+            removeEdge(oldEdge.id);
+            
+            // Create new edge with same ID but updated endpoints
+            const updatedEdge = {
+              ...oldEdge,
+              source: newConnection.source,
+              target: newConnection.target,
+              sourceHandle: newConnection.sourceHandle,
+              targetHandle: newConnection.targetHandle
+            };
+            
+            addEdge(updatedEdge);
+          } catch (error) {
+            console.error('Error updating edge:', error);
+          }
+        }}
+        edgeUpdaterRadius={20} // Radius for edge endpoint modification
         fitView
       >
         <Controls />

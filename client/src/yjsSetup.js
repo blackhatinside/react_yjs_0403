@@ -3,22 +3,24 @@ import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import * as awarenessProtocol from 'y-protocols/awareness';
 
-// Create a document that syncs automatically
+// Create a Yjs document
 export const ydoc = new Y.Doc();
 
-// Connect to the websocket provider with better reconnection handling
+// Initialize awareness
+export const awareness = new awarenessProtocol.Awareness(ydoc);
+
+// Connect to the websocket provider
 export const wsProvider = new WebsocketProvider(
-  'ws://localhost:1234', 
+  'ws://10.60.2.92:1234', 
   'rule-engine-room',
   ydoc,
   { 
     connect: true,
-    maxBackoffTime: 2000
+    maxBackoffTime: 2000,
+    disableBc: true,
+    awareness: awareness
   }
 );
-
-// For client presence awareness (cursors, etc.)
-export const awareness = wsProvider.awareness;
 
 // Local persistence to survive page reloads
 export const indexeddbProvider = new IndexeddbPersistence('rule-engine-room', ydoc);
@@ -149,12 +151,19 @@ export const getEdges = () => {
   return edges;
 };
 
-// Log connection status for debugging
+// Add better error handling
 wsProvider.on('status', event => {
   console.log('WebSocket connection status:', event.status);
+  if (event.status === 'connected') {
+    // Force reconnection if needed
+    if (!wsProvider.connected) {
+      wsProvider.connect();
+    }
+  }
 });
 
-// Set up error logging
-wsProvider.on('connection-error', error => {
-  console.error('WebSocket connection error:', error);
+wsProvider.on('sync', (isSynced) => {
+  if (isSynced) {
+    console.log('Fully synced with server');
+  }
 });
