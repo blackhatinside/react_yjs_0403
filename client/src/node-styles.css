@@ -88,20 +88,22 @@
 }
 
 /* Add these styles for edge colors */
-.react-flow__edge.AND .react-flow__edge-path {
+.react-flow__edge.AND path {
   stroke: #3498db;
+  stroke-width: 2;
 }
 
-.react-flow__edge.OR .react-flow__edge-path {
+.react-flow__edge.OR path {
   stroke: #e74c3c;
+  stroke-width: 2;
 }
 
-.react-flow__edge.selected.AND .react-flow__edge-path {
+.react-flow__edge.selected.AND path {
   stroke: #2980b9;
   stroke-width: 3;
 }
 
-.react-flow__edge.selected.OR .react-flow__edge-path {
+.react-flow__edge.selected.OR path {
   stroke: #c0392b;
   stroke-width: 3;
 } 

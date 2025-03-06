@@ -9,11 +9,18 @@ const App = () => {
   const [activeUsers, setActiveUsers] = useState([]);
 
   useEffect(() => {
-    // Set up connection status monitoring
-    wsProvider.on('status', event => {
+    const handleStatus = (event) => {
+      console.log('Connection status:', event.status);
       setConnectionStatus(event.status);
-    });
+      
+      // Force reconnect if disconnected
+      if (event.status === 'disconnected' && wsProvider.shouldConnect) {
+        wsProvider.connect();
+      }
+    };
 
+    wsProvider.on('status', handleStatus);
+    
     // Set up awareness for client tracking with better deduplication
     awareness.on('change', () => {
       const states = Array.from(awareness.getStates().values());
@@ -81,7 +88,7 @@ const App = () => {
 
     return () => {
       handleBeforeUnload();
-      wsProvider.off('status');
+      wsProvider.off('status', handleStatus);
       awareness.off('change');
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };

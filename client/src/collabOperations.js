@@ -75,24 +75,13 @@ export const addEdge = (edge) => {
       edgeData.set('targetHandle', edge.targetHandle);
     }
     
-    // Set data if available
-    if (edge.data) {
-      const data = new Y.Map();
-      if (edge.data.operator) {
-        data.set('operator', edge.data.operator);
-        // Add className based on operator
-        edgeData.set('className', edge.data.operator);
-      }
-      edgeData.set('data', data);
-    } else {
-      // Default data with AND operator
-      const data = new Y.Map();
-      data.set('operator', 'AND');
-      edgeData.set('data', data);
-      edgeData.set('className', 'AND');
-    }
+    // Set data and className
+    const data = new Y.Map();
+    const operator = edge.data?.operator || 'AND';
+    data.set('operator', operator);
+    edgeData.set('data', data);
+    edgeData.set('className', operator); // Ensure className is set
     
-    // Add to the Yjs map
     edgesMap.set(edge.id, edgeData);
   } catch (error) {
     console.error('Error adding edge:', error);
