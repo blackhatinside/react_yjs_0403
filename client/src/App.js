@@ -72,7 +72,8 @@ const App = () => {
     awareness.setLocalStateField('user', {
       name: userId,
       clientID: awareness.clientID,
-      color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      timestamp: Date.now()
     });
 
     // Properly clean up on unmount and page refresh

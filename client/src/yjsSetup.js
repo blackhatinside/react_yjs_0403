@@ -1,35 +1,37 @@
 import * as Y from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
-import { IndexeddbPersistence } from 'y-indexeddb';
+import { 
+  WebsocketProvider 
+} from 'y-websocket';
+import { 
+  IndexeddbPersistence 
+} from 'y-indexeddb';
 import * as awarenessProtocol from 'y-protocols/awareness';
 
 // Create a Yjs document
 export const ydoc = new Y.Doc();
 
-// Initialize awareness
-export const awareness = new awarenessProtocol.Awareness(ydoc);
+// Get the initial room from URL params or use 'default' room
+const urlParams = new URLSearchParams(window.location.search);
+const initialRoom = urlParams.get('room') || 'default';
 
-// Connect to the websocket provider
-export const wsProvider = new WebsocketProvider(
-  // 'ws://10.60.2.92:1234', 
-  'ws://10.60.1.38:1234',
-  'rule-engine-room',
-  ydoc,
-  { 
-    connect: true,
-    maxBackoffTime: 2000,
-    disableBc: true,
-    awareness: awareness
-  }
-);
-
-// Local persistence to survive page reloads
-export const indexeddbProvider = new IndexeddbPersistence('rule-engine-room', ydoc);
-
-// Shared data maps
+// Create shared data structures
 export const nodesMap = ydoc.getMap('nodes');
 export const edgesMap = ydoc.getMap('edges');
 export const metadataMap = ydoc.getMap('metadata');
+
+// Setup WebSocket provider with awareness
+export const wsProvider = new WebsocketProvider(
+  'ws://10.60.1.38:1234', 
+  initialRoom,
+  ydoc,
+  { connect: true }
+);
+
+// Initialize awareness
+export const awareness = wsProvider.awareness;
+
+// Local persistence to survive page reloads
+export const indexeddbProvider = new IndexeddbPersistence('rule-engine-room', ydoc);
 
 // Export awarenessProtocol for use in other files
 export { awarenessProtocol };
@@ -40,6 +42,46 @@ if (metadataMap.size === 0) {
   metadataMap.set('name', 'New Rule Chain');
   metadataMap.set('tenantId', 'demo');
 }
+
+// Update the UndoManager implementation
+export const undoManager = new Y.UndoManager([nodesMap, edgesMap], {
+  // Track changes from all sources, not just the current client
+  trackedOrigins: new Set([null])
+});
+
+// Export helpers for undo/redo
+export const performUndo = () => {
+  if (undoManager.canUndo()) {
+    undoManager.undo();
+    return true;
+  }
+  return false;
+};
+
+export const performRedo = () => {
+  if (undoManager.canRedo()) {
+    undoManager.redo();
+    return true;
+  }
+  return false;
+};
+
+// Add keyboard event listener to document when this module loads
+document.addEventListener('keydown', (event) => {
+  // Handle Ctrl+Z or Cmd+Z for undo
+  if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    performUndo();
+  }
+  // Handle Ctrl+Shift+Z or Cmd+Shift+Z or Ctrl+Y for redo
+  else if (
+    ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) ||
+    ((event.ctrlKey || event.metaKey) && event.key === 'y')
+  ) {
+    event.preventDefault();
+    performRedo();
+  }
+});
 
 // Helper function to convert Y.Map to array
 export const mapToArray = (yMap) => {
@@ -66,99 +108,142 @@ export const mapToArray = (yMap) => {
   return result;
 };
 
-// Helper function to get nodes as React Flow nodes
+// Helper function to get nodes and edges
 export const getNodes = () => {
   const nodes = [];
-  nodesMap.forEach((yNode, id) => {
-    if (!yNode) return;
+  nodesMap.forEach((value, key) => {
+    const node = {
+      id: value.get('id'),
+      type: value.get('type'),
+      position: {
+        x: value.get('position').get('x'),
+        y: value.get('position').get('y')
+      },
+      data: {
+        type: value.get('data').get('type'),
+        isNot: value.get('data').has('isNot') ? value.get('data').get('isNot') : false
+      }
+    };
     
-    try {
-      const position = yNode.get('position');
-      const data = yNode.get('data');
-      
-      const node = {
-        id: id,
-        type: yNode.get('type'),
-        position: {
-          x: position.get('x'),
-          y: position.get('y')
-        },
-        data: {
-          type: data.get('type')
-        }
-      };
-      
-      if (data.has('isNot')) {
-        node.data.isNot = data.get('isNot');
-      }
-      
-      if (data.has('metadata')) {
-        const metadata = data.get('metadata');
-        node.data.metadata = {};
-        
-        if (metadata instanceof Y.Map) {
-          metadata.forEach((value, key) => {
-            node.data.metadata[key] = value;
-          });
-        }
-      }
-      
-      nodes.push(node);
-    } catch (error) {
-      console.error(`Error processing node ${id}:`, error);
+    if (value.get('data').has('metadata')) {
+      node.data.metadata = {};
+      const metadata = value.get('data').get('metadata');
+      metadata.forEach((value, key) => {
+        node.data.metadata[key] = value;
+      });
     }
+    
+    nodes.push(node);
   });
-  
   return nodes;
 };
 
-// Helper function to get edges as React Flow edges
 export const getEdges = () => {
   const edges = [];
-  edgesMap.forEach((yEdge, id) => {
-    if (!yEdge) return;
+  edgesMap.forEach((value, key) => {
+    const edge = {
+      id: value.get('id'),
+      source: value.get('source'),
+      target: value.get('target'),
+    };
     
-    try {
-      const edge = {
-        id: id,
-        source: yEdge.get('source'),
-        target: yEdge.get('target'),
-        style: { stroke: '#555' }
-      };
-      
-      if (yEdge.has('sourceHandle')) {
-        edge.sourceHandle = yEdge.get('sourceHandle');
-      }
-      
-      if (yEdge.has('targetHandle')) {
-        edge.targetHandle = yEdge.get('targetHandle');
-      }
-      
-      if (yEdge.has('data')) {
-        const data = yEdge.get('data');
-        if (data) {
-          edge.data = {};
-          if (data.has('operator')) {
-            const operator = data.get('operator');
-            edge.data.operator = operator;
-            edge.label = operator;
-            edge.labelStyle = { fill: '#000', fontWeight: 'bold' };
-            edge.labelBgStyle = { fill: 'white', fillOpacity: 0.7 };
-            edge.labelBgPadding = [2, 4];
-            edge.labelShowBg = true;
-          }
-        }
-      }
-      
-      edge.type = 'default';
-      
-      edges.push(edge);
-    } catch (error) {
-      console.error(`Error processing edge ${id}:`, error);
+    if (value.has('sourceHandle')) {
+      edge.sourceHandle = value.get('sourceHandle');
+    }
+    
+    if (value.has('targetHandle')) {
+      edge.targetHandle = value.get('targetHandle');
+    }
+    
+    if (value.has('data')) {
+      edge.data = {};
+      const data = value.get('data');
+      data.forEach((value, key) => {
+        edge.data[key] = value;
+      });
+    }
+    
+    if (value.has('className')) {
+      edge.className = value.get('className');
+    }
+    
+    edge.label = edge.data?.operator || 'AND';
+    
+    edges.push(edge);
+  });
+  return edges;
+};
+
+// Track current room name
+export const getCurrentRoom = () => wsProvider.roomname;
+
+// Handle room switching
+export const switchRoom = (newRoom) => {
+  // Disconnect current provider
+  wsProvider.disconnect();
+  
+  // Update URL
+  const url = new URL(window.location);
+  url.searchParams.set('room', newRoom);
+  window.history.pushState({}, '', url);
+  
+  // Connect to new room
+  wsProvider.roomname = newRoom;
+  wsProvider.connect();
+  
+  // Dispatch custom event trigger
+  window.dispatchEvent(new CustomEvent('room-changed'));
+};
+
+// Get current user count
+export const getUserCount = () => {
+  let count = 0;
+  wsProvider.awareness.getStates().forEach(() => count++);
+  return count;
+};
+
+// Generate a random color for the user
+const getRandomColor = () => {
+  const colors = [
+    '#ecd444', '#ee6352', '#6eeb83', '#5ac4f8', '#e36bae',
+    '#b252ea', '#f19d38', '#4affda', '#c6b8d6', '#36cacc'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// Set user information with a random color and name
+export const setUserInfo = (name = `User ${Math.floor(Math.random() * 1000)}`) => {
+  const clientId = awareness.clientID;
+  
+  awareness.setLocalStateField('user', {
+    name,
+    color: getRandomColor(),
+    clientId: awareness.clientID
+  });
+  
+  console.log(`Set user info for client ${clientId}: ${name}`);
+};
+
+// Initialize user if not already set
+if (!awareness.getLocalState()?.user) {
+  setUserInfo();
+}
+
+// Get all users from awareness
+export const getUsers = () => {
+  const users = [];
+  awareness.getStates().forEach((state, clientId) => {
+    if (state.user) {
+      users.push({
+        clientId,
+        name: state.user.name,
+        color: state.user.color
+      });
     }
   });
   
-  return edges;
+  console.log(`Current users: ${users.length}`, users);
+  return users;
 };
 
 // Add better error handling

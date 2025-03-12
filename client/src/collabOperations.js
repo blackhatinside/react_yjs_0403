@@ -1,5 +1,9 @@
 import * as Y from 'yjs';
-import { nodesMap, edgesMap, metadataMap } from './yjsSetup';
+import { 
+  nodesMap, 
+  edgesMap, 
+  metadataMap 
+} from './yjsSetup';
 
 // Add a node to the Yjs document
 export const addNode = (node) => {
@@ -336,7 +340,7 @@ export const importFromJSON = (jsonData) => {
     nodesMap.clear();
     edgesMap.clear();
     
-    // Process the JSON data - handle both formats (with config array or direct ruleChain)
+    // Process the JSON data - handle different formats
     let diagram;
     
     if (jsonData.config && Array.isArray(jsonData.config) && jsonData.config.length > 0) {
@@ -353,20 +357,38 @@ export const importFromJSON = (jsonData) => {
     console.log("Importing diagram:", diagram);
     
     // Set metadata
-    if (diagram.id) {
-      metadataMap.set('id', diagram.id);
+    if (diagram.ID || diagram.id) {
+      metadataMap.set('id', diagram.ID || diagram.id);
     }
-    if (diagram.name) {
-      metadataMap.set('name', diagram.name);
+    if (diagram.Name || diagram.name) {
+      metadataMap.set('name', diagram.Name || diagram.name);
     }
     
-    // Import nodes
-    const nodesToAdd = diagram.nodes || [];
+    // Extract nodes from the diagram
+    let nodesToAdd = [];
+    if (diagram.Metadata && diagram.Metadata.Nodes) {
+      nodesToAdd = diagram.Metadata.Nodes;
+    } else if (diagram.metadata && diagram.metadata.nodes) {
+      nodesToAdd = diagram.metadata.nodes;
+    } else if (diagram.nodes) {
+      nodesToAdd = diagram.nodes;
+    }
+
+    // Map node types correctly
     nodesToAdd.forEach(node => {
-      const nodeId = node.id || `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const nodeType = node.type || 'default';
+      const nodeId = node.id || node.Id || `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Extract position data or create random position
+      // Map node types from import format to our format
+      let nodeType = node.type || node.Type || 'default';
+      
+      // Map Conditional nodes to Condition nodes and Response nodes to Action nodes
+      if (nodeType.toLowerCase().includes('conditional')) {
+        nodeType = 'condition';
+      } else if (nodeType.toLowerCase().includes('response')) {
+        nodeType = 'action';
+      }
+      
+      // Extract position data or create random position if none exists
       const position = node.position || { 
         x: Math.random() * 400,
         y: Math.random() * 400
@@ -379,32 +401,45 @@ export const importFromJSON = (jsonData) => {
         position: position,
         data: {
           type: nodeType,
+          isNot: node.isNot || false,
           metadata: {
-            name: node.name || `New ${nodeType} Node`
+            name: node.name || node.Name || `New ${nodeType} Node`
           }
         }
       };
       
       // Add specific metadata based on node type
-      if (nodeType === 'condition' && node.expression) {
-        newNode.data.metadata.expression = node.expression;
+      if (nodeType === 'condition' && (node.expression || node.configuration?.expression)) {
+        newNode.data.metadata.expression = node.expression || node.configuration?.expression;
       } else if (nodeType === 'action') {
-        if (node.actionType) newNode.data.metadata.actionType = node.actionType;
-        if (node.actionConfig) newNode.data.metadata.actionConfig = node.actionConfig;
-      } else if (nodeType === 'start' && node.initialData) {
-        newNode.data.metadata.initialData = node.initialData;
+        if (node.actionType || node.configuration?.actionType) {
+          newNode.data.metadata.actionType = node.actionType || node.configuration?.actionType;
+        }
+        if (node.actionConfig || node.configuration?.actionConfig) {
+          newNode.data.metadata.actionConfig = node.actionConfig || node.configuration?.actionConfig;
+        }
+      } else if (nodeType === 'start' && (node.initialData || node.configuration?.initialData)) {
+        newNode.data.metadata.initialData = node.initialData || node.configuration?.initialData;
       }
       
       // Add to Yjs
       addNode(newNode);
     });
     
-    // Import edges
-    const connections = diagram.connections || diagram.edges || [];
+    // Extract and process connections/edges
+    let connections = [];
+    if (diagram.Metadata && diagram.Metadata.Connections) {
+      connections = diagram.Metadata.Connections;
+    } else if (diagram.metadata && diagram.metadata.connections) {
+      connections = diagram.metadata.connections;
+    } else if (diagram.edges || diagram.connections) {
+      connections = diagram.edges || diagram.connections;
+    }
+    
     connections.forEach((connection, index) => {
       // Handle different formats
-      const source = connection.source || connection.from;
-      const target = connection.target || connection.to;
+      const source = connection.source || connection.FromId || connection.fromId || connection.from;
+      const target = connection.target || connection.ToId || connection.toId || connection.to;
       
       if (!source || !target) {
         console.warn('Skipping edge with missing source or target:', connection);
@@ -414,6 +449,9 @@ export const importFromJSON = (jsonData) => {
       // Create a unique edge ID
       const edgeId = connection.id || `edge-${Date.now()}-${index}`;
       
+      // Get operator type
+      const operator = connection.operator || connection.Type || connection.type || 'AND';
+      
       // Create edge structure
       const newEdge = {
         id: edgeId,
@@ -422,9 +460,11 @@ export const importFromJSON = (jsonData) => {
         sourceHandle: connection.sourceHandle,
         targetHandle: connection.targetHandle,
         data: {
-          operator: connection.operator || connection.type || 'AND'
+          operator: operator
         },
-        label: connection.operator || connection.type || 'AND'
+        // Include these to make edges more visible
+        className: `edge-${operator.toLowerCase()}`,
+        label: operator
       };
       
       // Add to Yjs

@@ -1,4 +1,9 @@
-import React, { useEffect, useCallback, useState, useRef } from 'react';
+import React, { 
+  useEffect, 
+  useCallback, 
+  useState, 
+  useRef 
+} from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -11,7 +16,19 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { nodesMap, edgesMap, getNodes, getEdges, wsProvider } from '../yjsSetup';
+import {
+  nodesMap, 
+  edgesMap, 
+  getNodes, 
+  getEdges, 
+  wsProvider, 
+  undoManager, 
+  getCurrentRoom, 
+  getUsers, 
+  switchRoom,
+  performUndo,
+  performRedo
+} from '../yjsSetup';
 import { 
   addNode, 
   removeNode, 
@@ -64,6 +81,16 @@ const FlowDiagram = () => {
   const reactFlowInstance = useReactFlow();
 
   const fileInputRef = useRef(null);
+
+  // Inside FlowDiagram component, add state for users and room
+  const [users, setUsers] = useState([]);
+  const [roomName, setRoomName] = useState(getCurrentRoom());
+  const [newRoomName, setNewRoomName] = useState('');
+  const [showRoomDialog, setShowRoomDialog] = useState(false);
+
+  // Add these state variables to track undo/redo ability
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
 
   // Initialize ReactFlow with Yjs data
   useEffect(() => {
@@ -256,6 +283,90 @@ const FlowDiagram = () => {
     fileInputRef.current.click();
   };
 
+  // Add keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          undoManager.redo();
+        } else {
+          undoManager.undo();
+        }
+      } else if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+        event.preventDefault();
+        undoManager.redo();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Add awareness update handling for users
+  useEffect(() => {
+    const updateUsers = () => {
+      setUsers(getUsers());
+      setRoomName(getCurrentRoom());
+    };
+
+    // Initial update
+    updateUsers();
+
+    // Listen for awareness changes
+    wsProvider.awareness.on('update', updateUsers);
+
+    return () => {
+      wsProvider.awareness.off('update', updateUsers);
+    };
+  }, []);
+
+  // Add room switching function
+  const handleRoomSwitch = () => {
+    if (newRoomName.trim()) {
+      switchRoom(newRoomName.trim());
+      setNewRoomName('');
+      setShowRoomDialog(false);
+    }
+  };
+
+  // Add this useEffect to update the undo/redo state
+  useEffect(() => {
+    const updateUndoRedoState = () => {
+      setCanUndo(undoManager.canUndo());
+      setCanRedo(undoManager.canRedo());
+    };
+    
+    // Update initially and after any undoable change
+    updateUndoRedoState();
+    undoManager.on('stack-item-added', updateUndoRedoState);
+    undoManager.on('stack-item-popped', updateUndoRedoState);
+    
+    return () => {
+      undoManager.off('stack-item-added', updateUndoRedoState);
+      undoManager.off('stack-item-popped', updateUndoRedoState);
+    };
+  }, []);
+
+  // Ensure room name state is updated when it changes
+  useEffect(() => {
+    setRoomName(getCurrentRoom());
+    
+    // Update when room changes
+    const handleRoomChange = () => {
+      setRoomName(getCurrentRoom());
+    };
+    
+    // Add listener for room changes
+    window.addEventListener('room-changed', handleRoomChange);
+    
+    return () => {
+      window.removeEventListener('room-changed', handleRoomChange);
+    };
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '80vh' }} ref={reactFlowWrapper}>
       <ReactFlow
@@ -298,13 +409,32 @@ const FlowDiagram = () => {
         
         <Panel position="top-right">
           <div className="flow-controls">
-            <button onClick={() => onAddNode('start')}>Add Start Node</button>
+            {/* <button onClick={() => onAddNode('start')}>Add Start Node</button> */}
             <button onClick={() => onAddNode('condition')}>Add Condition</button>
-            <button onClick={() => onAddNode('action')}>Add Action</button>
+            <button onClick={() => onAddNode('action')}>Add Response</button>
             <button onClick={onExportDiagram} disabled={!isValidDiagram}>
               Export Diagram
             </button>
             <button onClick={openFileDialog}>Import Diagram</button>
+            <button 
+              onClick={performUndo} 
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+            >
+              Undo
+            </button>
+            <button 
+              onClick={performRedo} 
+              disabled={!canRedo}
+              title="Redo (Ctrl+Y or Ctrl+Shift+Z)"
+            >
+              Redo
+            </button>
+            <span className="users-info">
+              {users.length > 1 
+                ? `${users.length - 1} other ${users.length - 1 === 1 ? 'user' : 'users'} online` 
+                : "No other users online"}
+            </span>
             <input
               type="file"
               ref={fileInputRef}
@@ -345,6 +475,66 @@ const FlowDiagram = () => {
           <pre>{JSON.stringify(ruleChainData, null, 2)}</pre>
         </div>
       )}
+      
+      {showRoomDialog && (
+        <div className="room-dialog-overlay">
+          <div className="room-dialog">
+            <h3>Switch Room</h3>
+            <p>Current room: {roomName}</p>
+            <input
+              type="text"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="Enter new room name"
+            />
+            <div className="room-dialog-buttons">
+              <button onClick={handleRoomSwitch}>Join Room</button>
+              <button onClick={() => setShowRoomDialog(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div className="app-header">
+        <div className="app-title">
+          Collaborative Rule Engine Designer - Room: {roomName}
+        </div>
+        <div className="user-info">
+          <UserAwarenessDropdown users={users} />
+          <button onClick={() => setShowRoomDialog(true)} className="room-switch-btn">
+            Switch Room
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const UserAwarenessDropdown = ({ users }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="user-awareness-dropdown">
+      <div 
+        className="dropdown-trigger"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        {users.length > 1 
+          ? `${users.length - 1} other ${users.length - 1 === 1 ? 'user' : 'users'} online` 
+          : "No other users online"}
+        {isOpen && users.length > 1 && (
+          <div className="dropdown-content">
+            <ul>
+              {users.filter(user => user.clientId !== wsProvider.awareness.clientID).map(user => (
+                <li key={user.clientId} style={{ color: user.color }}>
+                  {user.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

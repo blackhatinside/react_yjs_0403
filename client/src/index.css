@@ -11,3 +11,170 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Add these styles to your CSS file */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0074d9;
+  color: white;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.room-switch-btn {
+  background-color: white;
+  color: #0074d9;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.room-switch-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.room-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.room-dialog {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 350px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.room-dialog h3 {
+  margin-top: 0;
+  color: #0074d9;
+}
+
+.room-dialog input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.room-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.room-dialog-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.room-dialog-buttons button:first-child {
+  background-color: #0074d9;
+  color: white;
+}
+
+.room-dialog-buttons button:last-child {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.user-awareness-dropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.dropdown-trigger {
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.dropdown-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  width: 200px;
+  z-index: 1000;
+  color: #333;
+}
+
+.dropdown-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-content li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-content li:last-child {
+  border-bottom: none;
+}
+
+/* Add better styling for edges based on operator type */
+.edge-and {
+  stroke: #4CAF50 !important;
+  stroke-width: 2px !important;
+}
+
+.edge-or {
+  stroke: #2196F3 !important;
+  stroke-width: 2px !important;
+}
+
+.edge-not {
+  stroke: #F44336 !important;
+  stroke-width: 2px !important;
+}
+
+/* Default edge style */
+.react-flow__edge-path {
+  stroke: #555 !important;
+  stroke-width: 2px !important;
+}
+
+/* Edge labels */
+.react-flow__edge-text {
+  font-weight: bold !important;
+  fill: #000 !important;
+  paint-order: stroke !important;
+  stroke: #fff !important;
+  stroke-width: 2px !important;
+}
