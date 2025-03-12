@@ -336,66 +336,102 @@ export const importFromJSON = (jsonData) => {
     nodesMap.clear();
     edgesMap.clear();
     
-    // Process the JSON data
-    const config = jsonData.config || [];
-    if (config.length > 0) {
-      const diagram = config[0]; // Assuming first diagram
-      
-      // Set metadata
-      if (diagram.id) {
-        metadataMap.set('id', diagram.id);
-      }
-      
-      // Import nodes
-      (diagram.nodes || []).forEach(node => {
-        const nodeId = node.id;
-        const nodeType = node.type || 'default';
-        
-        // Extract position data
-        const position = node.position || node.positionAbsolute || { x: 0, y: 0 };
-        
-        // Create node structure
-        const newNode = {
-          id: nodeId,
-          type: nodeType,
-          position: position,
-          data: {
-            type: node.data?.type || nodeType,
-            metadata: {
-              ...node.data?.metadata,
-              name: node.data?.metadata?.name || `New ${nodeType} Node`
-            }
-          }
-        };
-        
-        // Add to Yjs
-        addNode(newNode);
-      });
-      
-      // Import edges
-      (diagram.edges || []).forEach(edge => {
-        const edgeId = edge.id;
-        const source = edge.source;
-        const target = edge.target;
-        
-        // Create edge structure
-        const newEdge = {
-          id: edgeId,
-          source: source,
-          target: target,
-          sourceHandle: edge.sourceHandle,
-          targetHandle: edge.targetHandle,
-          data: {
-            operator: edge.data?.operator || 'AND'
-          },
-          label: edge.data?.operator || 'AND'
-        };
-        
-        // Add to Yjs
-        addEdge(newEdge);
-      });
+    // Process the JSON data - handle both formats (with config array or direct ruleChain)
+    let diagram;
+    
+    if (jsonData.config && Array.isArray(jsonData.config) && jsonData.config.length > 0) {
+      // Original expected format with config array
+      diagram = jsonData.config[0]; 
+    } else if (jsonData.ruleChain) {
+      // Format from our export function
+      diagram = jsonData.ruleChain;
+    } else {
+      // Try to use the JSON as is
+      diagram = jsonData;
     }
     
+    console.log("Importing diagram:", diagram);
+    
+    // Set metadata
+    if (diagram.id) {
+      metadataMap.set('id', diagram.id);
+    }
+    if (diagram.name) {
+      metadataMap.set('name', diagram.name);
+    }
+    
+    // Import nodes
+    const nodesToAdd = diagram.nodes || [];
+    nodesToAdd.forEach(node => {
+      const nodeId = node.id || `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const nodeType = node.type || 'default';
+      
+      // Extract position data or create random position
+      const position = node.position || { 
+        x: Math.random() * 400,
+        y: Math.random() * 400
+      };
+      
+      // Create node structure
+      const newNode = {
+        id: nodeId,
+        type: nodeType,
+        position: position,
+        data: {
+          type: nodeType,
+          metadata: {
+            name: node.name || `New ${nodeType} Node`
+          }
+        }
+      };
+      
+      // Add specific metadata based on node type
+      if (nodeType === 'condition' && node.expression) {
+        newNode.data.metadata.expression = node.expression;
+      } else if (nodeType === 'action') {
+        if (node.actionType) newNode.data.metadata.actionType = node.actionType;
+        if (node.actionConfig) newNode.data.metadata.actionConfig = node.actionConfig;
+      } else if (nodeType === 'start' && node.initialData) {
+        newNode.data.metadata.initialData = node.initialData;
+      }
+      
+      // Add to Yjs
+      addNode(newNode);
+    });
+    
+    // Import edges
+    const connections = diagram.connections || diagram.edges || [];
+    connections.forEach((connection, index) => {
+      // Handle different formats
+      const source = connection.source || connection.from;
+      const target = connection.target || connection.to;
+      
+      if (!source || !target) {
+        console.warn('Skipping edge with missing source or target:', connection);
+        return;
+      }
+      
+      // Create a unique edge ID
+      const edgeId = connection.id || `edge-${Date.now()}-${index}`;
+      
+      // Create edge structure
+      const newEdge = {
+        id: edgeId,
+        source: source,
+        target: target,
+        sourceHandle: connection.sourceHandle,
+        targetHandle: connection.targetHandle,
+        data: {
+          operator: connection.operator || connection.type || 'AND'
+        },
+        label: connection.operator || connection.type || 'AND'
+      };
+      
+      // Add to Yjs
+      addEdge(newEdge);
+    });
+    
+    console.log('Import completed successfully');
     return true;
   } catch (error) {
     console.error('Error importing JSON:', error);

@@ -56,40 +56,24 @@ const App = () => {
       setActiveUsers(uniqueUsers);
     });
 
-    // Generate a persistent user ID for this browser
-    const getBrowserId = () => {
-      let browserId = localStorage.getItem('ruleBrowserId');
-      if (!browserId) {
-        browserId = `browser-${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
-        localStorage.setItem('ruleBrowserId', browserId);
-      }
-      return browserId;
+    // Generate a random user ID and persist it in localStorage
+    const generateUserId = () => {
+      const storedId = localStorage.getItem('userId');
+      if (storedId) return storedId;
+      
+      const newId = `User-${Math.floor(Math.random() * 1000)}`;
+      localStorage.setItem('userId', newId);
+      return newId;
     };
 
-    // Get user info with consistent ID per browser but unique name per tab
-    const getUserInfo = () => {
-      const browserId = getBrowserId();
-      const tabId = `tab-${Date.now().toString(36)}${Math.random().toString(36).substr(2, 5)}`;
-      
-      // Get or create a username that's consistent for this browser
-      let userName = localStorage.getItem('ruleUserName');
-      if (!userName) {
-        userName = `User-${Math.floor(Math.random() * 1000)}`;
-        localStorage.setItem('ruleUserName', userName);
-      }
-      
-      return {
-        clientID: ydoc.clientID,
-        browserId: browserId,
-        tabId: tabId,
-        name: userName,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`
-      };
-    };
-
-    // Set user state only once per document instance
-    const userInfo = getUserInfo();
-    awareness.setLocalState({ user: userInfo });
+    const userId = generateUserId();
+    
+    // Set awareness state for current user
+    awareness.setLocalStateField('user', {
+      name: userId,
+      clientID: awareness.clientID,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`
+    });
 
     // Properly clean up on unmount and page refresh
     const handleBeforeUnload = () => {
@@ -113,34 +97,34 @@ const App = () => {
   }, []);
 
   return (
-    <ReactFlowProvider>
-      <div className="app">
-        <header className="app-header">
-          <h1>Collaborative Rule Engine Designer</h1>
-          <div className="connection-status">
-            Status: <span className={connectionStatus}>{connectionStatus}</span>
-          </div>
-          <div className="active-users">
-            {activeUsers.length > 0 ? (
-              <div>
-                <span>Active Users: </span>
-                {activeUsers.map((user, index) => (
-                  <span key={user.clientID} style={{ color: user.color }}>
-                    {user.name}{index < activeUsers.length - 1 ? ', ' : ''}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span>No other users online</span>
-            )}
-          </div>
-        </header>
-        
-        <main className="app-content">
+    <div className="app">
+      <header className="app-header">
+        <h1>Collaborative Rule Engine Designer</h1>
+        <div className="connection-status">
+          Status: <span className={connectionStatus}>{connectionStatus}</span>
+        </div>
+        <div className="active-users">
+          {activeUsers.length > 0 ? (
+            <div>
+              <span>Active Users: </span>
+              {activeUsers.map((user, index) => (
+                <span key={user.clientID} style={{ color: user.color }}>
+                  {user.name}{index < activeUsers.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span>No other users online</span>
+          )}
+        </div>
+      </header>
+      
+      <main className="app-content">
+        <ReactFlowProvider>
           <FlowDiagram />
-        </main>
-      </div>
-    </ReactFlowProvider>
+        </ReactFlowProvider>
+      </main>
+    </div>
   );
 };
 

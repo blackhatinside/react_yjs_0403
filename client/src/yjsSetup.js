@@ -11,7 +11,8 @@ export const awareness = new awarenessProtocol.Awareness(ydoc);
 
 // Connect to the websocket provider
 export const wsProvider = new WebsocketProvider(
-  'ws://10.60.2.92:1234', 
+  // 'ws://10.60.2.92:1234', 
+  'ws://10.60.1.38:1234',
   'rule-engine-room',
   ydoc,
   { 
